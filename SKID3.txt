@@ -1,0 +1,144 @@
+protokół SKID3
+#LAB2a
+
+
+import binascii,hashlib,hmac,random
+
+#procedura sluzaca obliczaniu funckji hmac dla trzech skladowych
+#wejscie
+#key-ustalony wspólnie tajny klucz 
+#randa- liczba losowa uzytkownika A
+#randb- liczba losowa uzytkownika B
+#id- Identyfikator jednego z użytkowników
+#wyjscie
+#hhmaccout-obliczony wynik funkcji hmac
+
+def hmac3elements(key,randa,randb,id):
+    keyh=binascii.unhexlify(key)
+    x=randa.str()+randb.str()+id
+    hhmac=hmac.new(keyh,x.encode(),hashlib.sha256)
+    hhmaccout=hhmac.hexdigest()
+    return hhmaccout
+
+#procedura sluzaca obliczaniu funckji hmac dla dwoch skladowych
+#wejscie
+#key-ustalony wspólnie tajny klucz 
+#rand- liczba losowa któregoś z użytkowników
+#id- Identyfikator jednego z użytkowników
+#wyjscie
+#hhmaccout-obliczony wynik funkcji hmac
+
+def hmac2elements(key,rand,id):
+    keyh=binascii.unhexlify(key)
+    x=rand.str()+id
+    hhmac=hmac.new(keyh,x.encode(),hashlib.sha256)
+    hhmaccout=hhmac.hexdigest()
+    return hhmaccout
+
+#procedura sprawdzająca zgodność obliczonych funkcji HMAC
+#wyswietla komunikat o zgodnosci/niezgodnosci funkcji hmac
+#wejscie
+#hmac1-wynik funkcji hmac dla jednego z uzytkownikow
+#hmac2-wynik funkcji hmac dla drugiego z uzytkownikow
+
+def zgodnosc_hmac(hmac1,hmac2):
+    if(hmac1==hmac2):
+        print("Funkcje HMAC są zgodne!")
+    else:
+        print("Funkcje HMAC NIE są zgodne!")
+    
+
+#krok_0
+#procedura inicjiujaca identyfikatory uzytkowników A i B oraz tworząca wspólny tajny klucz
+#wyjscie
+#A-identyfikator uzytkownika A
+#B-identyfikator uzytkownika B
+#key-ustalony wspólnie tajny klucz 
+    
+def krok_0():
+    A="JanKowalski1922"
+    B="OlowniukJ"
+    key="FF332893502CD2B5"
+    return A,B,key
+
+#krok_1
+#procedura wykonująca pierwszy krok protokolu, inicjalizujemy liczbe losowa a i przesylamy ja do uzytkownika B
+#wyjscie
+#randa-liczba losowa uzytkownika a
+
+def krok_1():
+    randa=67215314321689
+    print("Ustalona liczba losowa przez Uzytkownika A:",randa)
+    print("Przesylam randa do uzytkownika B....")
+    return randa
+
+#krok_2
+#procedura realizujaca drugi krok protokolu, inicjalizujemy randb, oraz obliczamy hmac(randa,randb,B)
+#wejscie
+#randa-liczba losowa uzytkownika a
+#key-ustalony wspólnie tajny klucz 
+#B-identyfikator uzytkownika B
+#wyjscie
+#hmaccout-Obliczony HMAC(randa,randb,B)
+#randb--liczba losowa uzytkownika b
+
+def krok_2(randa,key,B):
+    randb=84673262483385
+    print("Ustalona liczba losowa przez Uzytkownika B:",randb)
+    print("Identyfikator uzytkownika B",B)
+    print("Obliczam HMAC dla randa+randb+B")
+    hhmaccout=hmac3elements(key,randa,randb,B)
+    print("Obliczony HMAC:",hhmaccout)
+    print("Wysylam do Uzytkownika A wartosci randb oraz wynik funkcji hmac....")
+    return randb,hhmaccout
+
+
+#krok_3
+#procedura realizujaca trzeci krok protokolu, uzytkownik a oblicza hmac(randa,randb,B) i sprawdza zgodnosc z uzytkownikiem B
+#jesli zgodne to wysyla hmac(randb,A)
+#wejscie
+#key-ustalony wspólnie tajny klucz 
+#randa-liczba losowa uzytkownika a
+#randb-liczba losowa uzytkownika b
+#A-identyfikator uzytkownika A
+#B-identyfikator uzytkownika B
+#hmaccout-Obliczony HMAC(randa,randb,B)
+#wyjscie
+#hmmacout3-Obliczony HMAC(randb,A) przez uzytkownka A
+
+def krok_3(key,randa,randb,A,B,hmaccout):
+    print("Użytkownik A: Obliczam HMAC")
+    hhmaccout2=hmac3elements(key,randa,randb,B)
+    print("Obliczony HMAC:",hhmaccout2)
+    zgodnosc_hmac(hmaccout,hhmaccout2)
+    print("Użytkownik A: Obliczam HMAC(randb,A)")
+    hmaccout3=hmac2elements(key,randb,A)
+    print("HMAC(randb,A):",hmaccout3)
+    print("Użytkownik A: Wysylam do uzytkownika B: HMAC(randb,A)")
+    return hmaccout3
+
+
+#krok_4
+#w kroku 4 uzytkownik B oblicza HMAC(randb,A) i sprawdza czy komunikuje sie z uzytkownikem A
+#wejscie
+#key-ustalony wspólnie tajny klucz 
+#A-identyfikator uzytkownika A
+#randb-liczba losowa uzytkownika b
+#hmmacout3-Obliczony HMAC(randb,A) przez uzytkownka A
+
+
+def krok_4(key,A,randb,hmaccout3):
+    print("Użytkownik B: Obliczam HMAC(randb,A)")
+    hmaccout4=hmac2elements(key,randb,A)
+    print("HMAC(randb,A):",hmaccout4)
+    zgodnosc_hmac(hmaccout3,hmaccout4)
+    print("Protokół SKID3 zakończony")
+
+#realizacja protokołu
+A,B,key=krok_0()
+randa=krok_1()
+randb,hhmaccout=krok_2(randa,key,B)
+hhmaccout3=krok_3(key,randa,randb,A,B,hhmaccout)
+krok_4(key,A,randb,hhmaccout3)
+
+
