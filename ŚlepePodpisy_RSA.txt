@@ -1,0 +1,104 @@
+Protokół ślepych podpisów cyfrowych bazujący na RSA
+#Lab6a
+
+#procedrua slużąca genracji kluczy rsa
+#wejscie
+#m- dlugosc modulu w bitach
+#wyjscie
+#n,e,d- elementy klucza publicznego i prywatnego
+def generacja_kluczy(m):
+    m1=m//2
+    pom1 = randint(2,2^(m1-1))
+    pom2 = 2^m1-pom1;
+    p= next_prime(pom1)
+    pom1=randint(2,2^(m1-1))
+    pom2= 2^m1+pom1;
+    q=next_prime(pom2)
+    n=p*q
+    phin=(p-1)*(q-1)
+    while True:
+        e=randint(3,phin-1)
+        if gcd(e,phin)==1:
+            d=inverse_mod(e,phin)
+            break
+    return n,e,d
+
+#krok_1
+#Podpisujacy B wybiera losowo k
+#wejscie:
+#n-granica  zakresu losowania
+#wyjscie:
+#k- wylosowane k
+def krok_1(n):
+    print("Krok 1: Losujemy k")
+    k=randint(1,n)
+    print("Wylosowane k:",k)
+    return k
+
+#krok_2
+#zaciemnianie wiadomosci m
+#wejscie
+#m-wiadomosc
+#k- wylosowane w poprzednim kroku k
+#e- klucz publiczny 
+#n- element klucza publicznego
+def krok_2(m,k,e,n):
+    print("Krok 2: zacieniamy m obliczajac t")
+    t=(m*pow(k,e,n))%n
+    print("Obliczone t :",t)
+    print("Przesyłam obliczone t do user B")
+    return t
+
+#krok 3 
+#wejscie
+#t-zaciemniona wiadomosc
+#d-klucz prywatny
+#n-element klucza prywatnego
+#wyjscie
+#r- podpisane t uzytkownika B
+def krok_3(t,d,n):
+    print("Krok 3:")
+    print("User B podpisuje t")
+    r=power_mod(t,d,n)
+    print("Podpisane r:",r)
+    return r
+
+
+#krok 4
+#uzytkownik A usuwa zaciemnienie t^d
+#wejscie
+#r- podpisane t uzytkownika B
+#k- wylosowane k
+#n - elementy klucza prywatnego i publiczneog
+#wyjscie
+#s- podpis pod wiadomoscią m
+def krok_4(r,k,n):
+    print("Krok 4:")
+    print("Użytkownik A usuwa zaciemnienie t^d")
+    s=(r % n)*pow(k,-1,n)
+    print("S:",s)
+    return s
+
+#sprawdzenie podpisu
+#m-wiadomosc m
+#s podpis pod wiadomoscia m
+#e,n klucz publiczny
+def sprawdzenie(m,s,e,n):
+    rob=power_mod(s,e,n)
+    if(rob==m):
+        print("Sprawdzenie przebiegło pomyślnie")
+    else:
+        print("Cos poszlo nie tak")
+    
+n,e,d=generacja_kluczy(128)    
+print("n:",n)
+print("e:",e)
+print("d:",d)
+
+k=krok_1(n)
+m=randint(1,n-1)
+print("Wiadomosc  M:",m)
+t=krok_2(m,k,e,n)
+r=krok_3(t,d,n)
+s=krok_4(r,k,n)
+sprawdzenie(m,s,e,n)
