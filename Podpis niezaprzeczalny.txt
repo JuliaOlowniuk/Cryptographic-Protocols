@@ -1,0 +1,93 @@
+Podpis niezaprzeczalny
+#LAB4
+
+#deklaracja liczby pierwszej, ciala, elementu pierwotnego z ciala i losowego elementu z ciala jako wiadomosc
+xx=randint(2^10,2^32)
+p=next_prime(xx)
+print("Liczba P:",p)
+F=GF(p)
+m=F.random_element()
+g=F.primitive_element()
+
+
+#procedura sluzaca generacji kluczy
+#wejscie 
+#p-liczba pierwsza 
+#wyjscie
+#x-klucz prywatny
+#pubX-klucz publiczny 
+def generacja_kluczy(p):
+    x=randint(1,p-1)
+    while not gcd(x,p-1)==1:
+        x=randint(1,p-1)
+    pubX=g^x
+    print("Klucz prywatny",x)
+    print("Klucz publiczny",pubX)
+    return x,pubX
+
+#procedura sluzaca generacji podpisu
+#wejscie
+#m-wiadomosc-liczna liczba calkowita
+#x-klucz prywatny
+#p-liczba pierwsza 
+#wyjscie
+#z-podpis pod wiadomoscia m
+def generacja_podpisu(m,x,p):
+    z=pow(m,x,p)
+    return z
+
+#procedura sluzaca weryfikacji podpisu
+#wejscie
+#p-liczba pierwsza 
+#m-wiadomosc-liczna liczba calkowita
+#g-element pierwotny ciala fp
+#x-klucz prywatny
+#z-podpis pod wiadomoscia m
+#pubX-klucz publiczny 
+def weryfikacja_podpisu(p,m,g,x,z,pubX):
+    #uzytkownik B wybiera dwie liczby losowe a i b
+    a=randint(1,p-1)
+    b=randint(1,p-1)
+    c=((m^a)*(g^b))%p
+    print("Uzytkownik B:obliczylem c i przesylam je do Uzytkownika A:",c)
+    #uzytkownik A wybiera liczbe losową q mniejsza od p,oblicza s1 i s2
+    q=randint(1,p-1)
+    print("Q:",q)
+    secret1=(c*(g^q))%p
+    secret2=((c*(g^q))^x)%p
+    print("Uzytkownik A: Obliczylem wartosci s1 i s2 i wysylam je do uz.B")
+    print("S1:",secret1)
+    print("S2:",secret2)
+    #uzytkownik B wysyla do A wartosci ai b wiec uz.A moze potwierdzic ze B nie oszukiwal
+    print("Uzytkownik A: Przesylam wartosci a i b do uz.A  a:",a,"b:",b)
+    #sprawdzenia przez A czy B nie oszukiwal
+    uzaC=((m^a)*(g^b))%p
+    if(uzaC==c):
+        print("Uzytkownik B nie oszukiwal w kroku 1")
+    else:
+        print("Ktos jest oszustem...")
+
+    #A przesyla do B q aby mog obliczyc s1 i s2 z "daszkiem"
+    print("Uzytkownik A: przesylam wartosc q do uzytkownika B")
+    #obliczanie s1 i s2 przez b
+    dsecret1=(c*(g^q))%p
+    dsecret2=(pubX^(b+q))*(z^a)
+
+
+    print("S1:",secret1)
+    print("s1 z daszkiem:",dsecret1)
+    print("S2:",secret2)
+    print("s2 z daszkiem:",dsecret2)
+    #sprawdzenie czy  s1==s1' i s2==s2'
+    if(secret1==dsecret1 and secret2==dsecret2):
+        print("Podpis jest poprawny!")
+    else:
+        print("Podpis nie jest poprawny")
+
+        
+#realizacja protokolu        
+x,pubX=generacja_kluczy(p)
+z=generacja_podpisu(m,x,p)
+print("Przesyłam wiadomość:",m)
+print("Podpisana:",z)      
+weryfikacja_podpisu(p,m,g,x,z,pubX)
