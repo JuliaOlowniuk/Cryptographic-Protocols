@@ -1,0 +1,115 @@
+Protokół dowodu o wiedzy dotyczący znajomośći logarytmu dyskretnego 
+#lab7
+
+#procedura generująca p,n,a
+#wejscie:
+#bit-długosc charekterystyki ciala p wyrazona w bitach
+#wyjscie:
+#p-charakterystyka p ciala Fp 
+#a-generator
+#n-najmniejsza liczba naturalna dla ktore g^n=1(mod p)
+def generacja(bit):
+    p=previous_prime(2^bit)
+    while not is_prime((p-1)//2):
+        p = previous_prime(p)
+    n = (p-1) // 2
+    F=GF(p)
+    while True:
+        a = F.random_element()
+        if a.multiplicative_order()==n:
+            break
+    return p,n,a
+
+#krok 1 
+# Uzytkownik A wybiera liczbe losowa r
+#wejscie
+#p-charakterystyka p ciala Fp 
+#a-generator
+#wyjscie
+#r- wylosowana liczba mniejsza od p-1
+#h- a do potęgi r
+
+
+def krok_1(p,a):
+    print("Uzytkownik A wybiera liczbe losowa r i oblicza h")
+    r=randint(2,p-2)
+    print("Wylosowane R:",r)
+    print("Obliczam h...")
+    h=pow(a,r,p)
+    print("Obliczone h:",h)
+    print("Przesylam r i h do uzytkownika B...")
+    return h,r
+
+#krok 2 
+#uzytkownik B losuje losowy bit i wysyla go do a
+#wyjscie
+#k-losowy bit (0,1)
+def krok_2():
+    print("Uzytkownik B wysyla do A losowy bit")
+    k=randint(0,1)
+    print("Losowy bit K = ",k)
+    print("Wysylam losowy bit ",k,"do uzytkownika A")
+    return k
+
+#krok 3 
+#uzytkownik A oblicza s = r+kx mod p-1
+#wejscie
+#r- wylosowana liczba mniejsza od p-1
+#k-losowy bit (0,1)
+#x - tajna liczba wzglednie pierwsza z p-1
+#p-charakterystyka p ciala Fp
+#wyjscie
+#s- obliczone s = r+kx mod p-1
+
+def krok_3(r,k,x,p):
+    print("Uzytkownik A oblicza s = r+kx(mod p-1)")
+    s=pow((r+k*x),1,p-1)
+    print("Obliczone S:",s)
+    print("Przesylam S uzytkownikowi B..")
+    return s
+
+#krok 4
+#sprawdzanie zgodnosci a^s z hb^k mod p
+#wejscie 
+#a-generator
+#s- obliczone s = r+kx mod p-1
+#h- a do potęgi r
+#b = a^x mod p - logarytmowana liczba
+#k-losowy bit (0,1)
+#p-charakterystyka p ciala Fp
+def krok_4(a,s,h,b,k,p):
+    print("Uzytkownik A sprawdza zgodnosc a^s = hb^k mod p")
+    if pow(a,s)==pow(h*pow(b,k),1,p):
+        print("Zgodnosc a^s z hb^k mod p")
+        
+    else:
+        print("a^s niezgodne z hb^k mod p")
+
+
+        
+#krok 5
+#wejscie
+#b = a^x mod p - logarytmowana liczba
+#t- ilosc iteracji aby uzyskać pewnosc ze nikt nie podszywa się za użytkownika B
+def krok_5(b,t):
+    for i in range(0,t):
+        h,r=krok_1(p,a)
+        k=krok_2()
+        s=krok_3(r,k,x,p)
+        krok_4(a,s,h,b,k,p)
+        print("---------")
+
+#generacja parametrow dziedziny        
+p,n,a=generacja(128)
+#losowanie tajnej liczby x
+x=randint(2,p-2)
+while not gcd(x,p-1)==1:
+    x=randint(2,p-2)
+    #print("boop")
+print("X:",x)
+#obliczenie b- logarytmowanej liczby
+b=pow(a,x,p)
+print("B:",b)
+# realizacja protokołu dla liczby b oraz t=10 
+krok_5(b,10)
+
