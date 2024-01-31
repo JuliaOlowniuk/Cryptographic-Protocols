@@ -1,0 +1,222 @@
+Protokół Diffiego- Hellmana dla trzech uczestników
+#LAB1b
+
+
+#procedura generująca p,n,g
+#wejscie:
+#b-długosc charekterystyki ciala p wyrazona w bitach
+#wyjscie:
+#p-charakterystyka p ciala Fp 
+#g-generator
+#n-najmniejsza liczba naturalna dla ktore g^n=1(mod p)
+
+def generacja(b):
+    p = previous_prime(2^b)
+    while not is_prime((p-1)//2):
+        p = previous_prime(p)
+    n = (p-1) // 2
+    F = GF(p)
+    while True:
+        g= F.random_element()
+        if g.multiplicative_order()==n:
+            break
+    return p,n,g
+    
+    
+#procedura generujaca klucze: prywatny i publiczny
+#wejscie:
+#p-charakterystyka p ciala Fp 
+#g-generator podgrupy cyklicznej rzedu n
+#n-rzad podgrupy cyklicznej
+#wyjscie:
+#kpriv-klucz prywatny dla danego uzytkownika
+#kpub-klucz publiczny dla danego uzytkownika
+
+def generacja_kluczy(p,n,g):
+    kpriv=randint(1,n-1)
+    kpub= (g^kpriv)%p
+    return kpriv,kpub
+
+
+#Procedura dla KROKU pierwszego
+#wykorzystujemy funkcje generacja_kluczy dla wygenerowania kluczy publicznego i prywatnego
+#wejscie
+#p-charakterystyka p ciala Fp 
+#g-generator podgrupy cyklicznej rzedu n
+#n-rzad podgrupy cyklicznej
+#wyjscie
+#priv_a-klucz prywatny a
+#pub_a-klucz publiczny a
+
+def krok_pierwszy(p,n,g):
+    priv_a,pub_a=generacja_kluczy(p,n,g)
+    return priv_a,pub_a
+
+#Procedura dla KROKU drugiego
+#wykorzystujemy funkcje generacja_kluczy dla wygenerowania kluczy publicznego i prywatnego
+#wejscie
+#p-charakterystyka p ciala Fp 
+#g-generator podgrupy cyklicznej rzedu n
+#n-rzad podgrupy cyklicznej
+#wyjscie
+#priv_b-klucz prywatny b
+#pub_b-klucz publiczny b
+
+def krok_drugi(p,n,g):
+    priv_b,pub_b=generacja_kluczy(p,n,g)
+    return priv_b,pub_b
+
+
+
+#Procedura dla KROKU trzeciego
+#wykorzystujemy funkcje generacja_kluczy dla wygenerowania kluczy publicznego i prywatnego
+#wejscie
+#p-charakterystyka p ciala Fp 
+#g-generator podgrupy cyklicznej rzedu n
+#n-rzad podgrupy cykliczne
+#wyjscie
+#priv_c-klucz prywatny c
+#pub_c-klucz publiczny c
+
+def krok_trzeci(p,n,g):
+    priv_c,pub_c=generacja_kluczy(p,n,g)
+    return priv_c,pub_c
+
+#procedura dla kroku czwartego
+#w kroku czwartym obliczam wartość (g^a)^b czyli (g^priv_a)^priv_b gdzie g^priv_a to pub_a
+#wejscie:
+#pub_a-klucz publiczny a
+#priv_b- klucz prywatny b
+#p-charakterystyka p ciala Fp
+#wyjscie
+#sab-sekretna wartosc (g^a)^b potrzebna Uzytkownikowi C do obliczenia klucza tajnego
+
+def krok_czwarty(pub_a,priv_b,p):
+    sab=(pub_a^priv_b)%p
+    return sab
+
+
+#procedura dla kroku piatego
+#Uzytkownik C otrzymuje wartosc (g^priv_a)^priv_b aby poliyczyc klucz tajny
+#wejscie
+#sab-sekretna wartosc (g^a)^b potrzebna Uzytkownikowi C do obliczenia klucza tajnego
+#priv_c- klucz prywatny c
+#p-charakterystyka p ciala Fp
+#wyjscie
+#secret1-klucz tajny, powinnien miec taka sama wartosc jak secret2 oraz secret3
+
+def krok_piaty(sab,priv_c,p):
+    secret1=(sab^priv_c)%p
+    return secret1
+
+#procedura dla kroku szostego:
+#w kroku szostym obliczam wartość (g^b)^c czyli (g^priv_b)^priv_c gdzie g^priv_b to pub_b
+#wejscie:
+#pub_b-klucz publiczny b
+#priv_c- klucz prywatny c
+#p-charakterystyka p ciala Fp
+#wyjscie
+#sbc-sekretna wartosc (g^b)^c potrzebna Uzytkownikowi A do obliczenia klucza tajnego
+
+def krok_szosty(pub_b,priv_c,p):
+    sbc=(pub_b^priv_c)%p
+    return sbc
+
+
+#procedura dla kroku siodmego:
+#Uzytkownik A otrzymuje wartosc (g^priv_b)^priv_c aby poliyczyc klucz tajny
+#wejscie
+#sbc-sekretna wartosc (g^b)^c potrzebna Uzytkownikowi A do obliczenia klucza tajnego
+#priv_a- klucz prywatny a
+#p-charakterystyka p ciala Fp
+#wyjscie
+#secret2-klucz tajny, powinnien miec taka sama wartosc jak secret1 oraz secret3
+
+def krok_siodmy(sbc,priv_a,p):
+    secret2=(sbc^priv_a)%p
+    return secret2
+
+#procedura dla kroku osmego:
+#w kroku szostym obliczam wartość (g^c)^a czyli (g^priv_c)^priv_a gdzie g^priv_c to pub_c
+#wejscie:
+#pub_c-klucz publiczny c
+#priv_a- klucz prywatny a
+#p-charakterystyka p ciala Fp
+#wyjscie
+#sca-sekretna wartosc (g^c)^a potrzebna Uzytkownikowi B do obliczenia klucza tajnego
+
+def krok_osmy(pub_c,priv_a,p):
+    sca=(pub_c^priv_a)%p
+    return sca
+
+#procedura dla kroku dziewiatego:
+#Uzytkownik B otrzymuje wartosc (g^priv_c)^priv_a aby poliyczyc klucz tajny
+#wejscie
+#sca-sekretna wartosc (g^c)^a potrzebna Uzytkownikowi B do obliczenia klucza tajnego
+#priv_b- klucz prywatny b
+#p-charakterystyka p ciala Fp
+#wyjscie
+#secret3-klucz tajny, powinnien miec taka sama wartosc jak secret1 oraz secret2
+
+def krok_dziewiaty(sca,priv_b,p):
+    secret3=(sca^priv_b)%p
+    return secret3
+
+#krok10 procedura
+#sprawdzenie czy wszystkie klucze tajne sa zgodne
+#wejscie
+#s1-klucz tajny 1
+#s2- klucz tajny 2
+#s3- klucz tajny 3
+
+def secretchecker(s1,s2,s3):
+    if(s1==s2 and s2==s3 and s1==s3):
+        print("Wszystkie klucze tajne są zgodne ze sobą")
+    else:
+        print("Klucze nie są zgodne ze sobą!")
+
+#wygenerowanie
+#p-charakterystyka p ciala Fp 
+#g-generator
+#n-najmniejsza liczba naturalna dla ktore g^n=1(mod p)
+p,n,g= generacja(128)
+print("p:",p)
+print("n:",n)
+print("g:",g)
+
+#krok 1
+priv_a,pub_a=krok_pierwszy(p,n,g)
+print("Klucz prywatny a :",priv_a,"Klucz publiczny a :",pub_a)
+#krok 2
+priv_b,pub_b=krok_drugi(p,n,g)
+print("Klucz prywatny b :",priv_b,"Klucz publiczny b :",pub_b)
+#krok 3
+priv_c,pub_c=krok_trzeci(p,n,g)
+print("Klucz prywatny c :",priv_c,"Klucz publiczny c :",pub_c)
+
+#krok 4
+sab=krok_czwarty(pub_a,priv_b,p)
+print("Secret ab:",sab)
+
+#krok 5
+secret1=krok_piaty(sab,priv_c,p)
+
+#krok 6
+sbc=krok_szosty(pub_b,priv_c,p)
+print("Secret bc:",sbc)
+
+#krok 7
+secret2=krok_siodmy(sbc,priv_a,p)
+
+#krok 8 
+sca=krok_osmy(pub_c,priv_a,p)
+print("Secret ca:",sca)
+
+#krok 9 
+secret3=krok_dziewiaty(sca,priv_b,p)
+
+print("Secret1:",secret1)
+print("Secret2:",secret2)
+print("Secret3:",secret3)
+#krok 10 - sprawdzenie poprawnosci kluczy
+secretchecker(secret1,secret2,secret3)
