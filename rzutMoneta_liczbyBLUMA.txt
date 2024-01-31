@@ -1,0 +1,118 @@
+Protokół rzutu monetą w oparciu o liczby całkowite Bluma
+#LAB5
+
+
+#procerura sluzaca generacji liczby calkowitej bluma
+#wejscie 
+#b1- liczba bitów liczby p
+#b2-liczba bitów liczby q
+#wyjscie
+#p- liczba pierwsza p
+#q- liczba pierwsza q
+#n- liczba calkowita bluma n=p*q
+def generacja(b1,b2):
+    p = previous_prime(2^b1)
+    q = next_prime(2^b2)
+    n = p*q
+    return p,q,n
+
+#krok1
+#procedura generująca losowe x wzglednie pierwsze z n 
+#wejscie
+#n- liczba calkowita bluma n
+#wyjscie
+#x-liczba losowa x
+def krok_1(n):
+    x=randint(1,n-1)
+    while not gcd(x,n)==1:
+        x=randint(1,n)
+    print("X:",x)
+    return x
+
+
+#krok2
+#procedrua obliczająca xzero oraz xjeden
+#wejscie
+#n- liczba calkowita bluma n
+#x-liczba losowa x
+#wyjscie
+#x_zero- obliczone x_zero
+#x_jeden - obliczone x_jeden=x_zero^2
+
+def krok_2(x,n):
+    x_zero=(x^2)%n
+    x_jeden=(x_zero^2)%n
+    return x_zero,x_jeden
+
+#krok3
+#uzytkownik b wybiera czy xzero jest parzyste czy nie
+#0 parzyste
+#1 nieparzyste
+#wyjscie
+#opcja-wybor uzytkownika b
+def krok_3():
+    opcja=randint(0,1)
+    print("Opcja Użytkownika B:",opcja)
+    return opcja
+
+#krok4
+#uzytkownika a przesyla x i xo do uzytkownika B
+#wejscie
+#x_zero- obliczone x_zero
+#x_jeden - obliczone x_jeden=x_zero^2
+def krok_4(x,xzero):
+    print("Użytkownik A: Przesyłam do użytkownika B")
+    print("X:",x)
+    print("Xzero:",xzero)
+
+#krok5
+#wejscie
+#Uzytkownik weryfikuje uczciwosc rzutu monetą, ogłaszany jest wynik rzutu
+#n- liczba calkowita bluma n
+#p- liczba pierwsza p
+#q- liczba pierwsza q
+#x-liczba losowa x
+#x_zero- obliczone x_zero
+#x_jeden - obliczone x_jeden=x_zero^2
+#opcja-wybor uzytkownika b
+def krok_5(n,p,q,x,xzero,x_jeden,opcja):
+    print("Użytkownik B: otrzymałam od użytkownika A czynniki p i q")
+    print("p:",p)
+    print("q:",q)
+    
+    nspr=p*q
+    
+    if nspr==n:
+        print("N jest liczbą Bluma")
+    else:
+        print("N nie jest liczbą Bluma")
+    
+    
+    xzerospr=(x^2)%nspr
+    x_jedenspr=(xzerospr^2)%nspr
+    
+    if xzerospr==xzero and x_jedenspr==x_jeden:
+        print("Wszystko jest w porządku xo i x1 sie zgadzają")
+    else:
+        print("Coś poszlo nie tak...")
+        
+    
+    if(opcja==xzero%2):
+        print("Wylosowano orła")
+    else:
+        print("Wylosowano reszkę")
+    
+    
+#realizacja protokołu    
+p,q,n=generacja(64,64)
+
+print("Wylosowane p:",p)
+print("Wylosowane q:",q)
+print("Obliczone q:",n)
+x=krok_1(n)
+xzero,xjeden=krok_2(x,n)
+print("X_zero:",xzero)
+print("X_jeden:",xjeden)
+opcja=krok_3()
+krok_4(x,xzero)
+krok_5(n,p,q,x,xzero,xjeden,opcja)
