@@ -1,0 +1,115 @@
+Schemat Karnina- Greena'a- Hellmana
+#LAB3b
+
+#liczba pierwsza, ktoa okresla wielkosc ciala skonczonego 
+q = 89
+
+#ilosc osob w protokole
+n = 7
+#ilosc osob do otworzenia secretu
+k = 4
+
+#Ciało F
+F.<a>=GF(q^6)
+#Wylosowana wiadomosc
+M=F.random_element()
+#Element pierwotny
+b=F.primitive_element()
+#Macierz przechowująca "alfy"
+A= zero_matrix(F,n,k)
+
+#Procedura Do generacji Cieni
+#wejscie
+#n-ilosc osob w protokole
+#k- ilu uzytkownikow odtwarza wiadomosc
+#A-Macierz przechowująca "alfy"
+#b-element pierwotny
+#F-Ciało F
+#wyjscie
+#C-macierz zapelniona cieniami
+def generacja_cieni(n,k,A,b,F):
+    for i in range (n-1):
+        A[i,0]=1
+    A[n-1,0]=0
+    for i in range (k-1):
+        A[n-1,i]=0
+    A[n-1,k-1]=1
+    
+
+    for i in range(n-1):
+        for j in range (1,k):
+            A[i,j]=(b^((i+1)*j))
+        
+    print("Wypełniłem macierz A alfami...")        
+    print(A)
+
+
+    print("Wypelniam macierz losowymi elementami oraz wiadomoscia..")
+    B=[]
+    B.append(M)
+    for i in range(1,k):
+        B.append(F.random_element())
+    print(B)
+    B=vector(B)
+    C=A*B
+    print(C)
+    return C
+
+
+    
+#tablica przechowująca numery wylosowanych uzytkownikow
+uzytkownicy=[]
+#losowanie ktorzy uzytkownicy beda odtwarzali tajemnicę
+while(len(uzytkownicy)!=k):
+    x=randint(1,n)
+    if x not in uzytkownicy:
+        uzytkownicy.append(x)
+#sortowanie ich numerów    
+uzytkownicy.sort()
+print("Uzytkownicy:",uzytkownicy)
+#procedura sluzaca odtwarzaniu tajemnicy
+#wejscie
+#uzytkownicy- tablica przechowujaca numery wylosowanych uzytkownikow do odtwarzania wielomianu
+#k- ilu uzytkownikow odtwarza wiadomosc
+#b- element pierwotny
+#F - ciało proste
+#C- macierz przechowująca cienie
+#wyjscie
+#X[0,0]- odtworzona wiadomosc
+def odtwarzanie_tajemnicy(uzytkownicy,k,b,F,C):
+    #deklaracja  macierzy D
+    D=zero_matrix(F,len(uzytkownicy),k)
+    #zapelnianie macierzy D
+    for i in range(len(uzytkownicy)):
+        for j in range(len(uzytkownicy)):
+            D[i,j]=(b^(uzytkownicy[i]))^j
+    # w przypadku wyboru ostatniego uzytkownika =n ostatni wiesz ustawiam na zera, a ostatnia komorke na 1
+    if (uzytkownicy[len(uzytkownicy)-1]==n):
+        for i in range(k-1):
+            D[k-1,i]=0
+        D[k-1,k-1]=1
+    print("Wyznaczona Macierz D:")
+    print(D)
+
+    #deklaracja macierzy E- przechowujacej odtworzone alfy oraz odtowrzona wiadomosc
+    E=matrix(F,k,1)
+    #wypelnianie macierzy E cieniami odpowiednich uzytkownikow
+    for i in range(k):
+        user=int(uzytkownicy[i])
+        E[i,0]=C[user-1]
+
+    # rozwiazywanie równania na podstawie Cieni
+    X=D.solve_right(E)
+    print("Wyswietlam Macierz z odtowrzonymi elementami i wiadomosciami")
+    print(X)
+    print("Odtworzone M:",X[0,0])
+    return X[0,0]
+
+
+C=generacja_cieni(n,k,A,b,F)
+Modt=odtwarzanie_tajemnicy(uzytkownicy,k,b,F,C)
+
+print("Oryginalne M:",M)
+#sprawdzenie czy udalo sie odtworzyc poprawnie wiadomosc
+if (Modt==M):
+    print("Udalo odtworzyć się wiadomość!")
